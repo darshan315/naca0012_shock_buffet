@@ -1,0 +1,23 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+
+# Source tutorial run functions
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+
+# mesh creation with blockMesh
+runApplication blockMesh
+# decompose mesh
+runApplication decomposePar
+# distribute 0.orig directory to processor folders
+restore0Dir -processor
+# dummy file for post-processing
+touch post.foam
+# execute flow solver
+# runParallel `getApplication`
+
+mpirun -n `getNumberOfProcessors` `getApplication` -parallel 2>&1 | tee log.hisa
+
+runParallel -s postProcess hisa -postProcess -func MachNo
+
+# -----------------------------------------------------------------%
